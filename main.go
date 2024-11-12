@@ -109,9 +109,8 @@ type Column struct {
 }
 
 func generateGraphQLSchemaWithCommentsWithFields(dbname string, crossTablefields []string) string {
-	var fields []string
+	var allCols []Column
 	var types map[string]any = make(map[string]any)
-
 	for _, corrdinate := range crossTablefields {
 		tableField := strings.Split(corrdinate, ".")
 		tableName := tableField[0]
@@ -123,18 +122,20 @@ func generateGraphQLSchemaWithCommentsWithFields(dbname string, crossTablefields
 				if rawcomment == "" {
 					rawcomment = genComment(col)
 				}
-				gqlType := mapMySQLTypeToGraphQL(col.Type, col.Null)
-				comment := fmt.Sprintf("    %s %s %s", `"""`, rawcomment, `"""`)
-				field := fmt.Sprintf("    %s: %s", asLowCaseCamStyle(col.Name), gqlType)
-				fields = append(fields, comment, field)
+				col.Comment = rawcomment
+				allCols = append(allCols, col)
 			}
 		}
 	}
-
-	return fmt.Sprintf("type %s {\n%s\n}", asTypeName(types), strings.Join(fields, "\n"))
+	schemaGenerator := &SchemaGenerator{
+		Name:       asTypeNameFromKeys(types),
+		RawColumns: allCols,
+	}
+	return schemaGenerator.Gen()
 }
 
-func asTypeName(types map[string]any) string {
+// asTypeNameFromKeys [Aa,Bb,Cc] => AaBbCc.
+func asTypeNameFromKeys(types map[string]any) string {
 	keys := make([]string, 0, len(types))
 	for k := range types {
 		keys = append(keys, asCamStyle(k))
@@ -146,7 +147,6 @@ func asCamStyle(name string) string {
 	if len(name) <= 0 {
 		return name
 	}
-
 	nameArr := strings.Split(name, "_")
 	for i, part := range nameArr {
 		if len(part) > 0 {
@@ -154,9 +154,9 @@ func asCamStyle(name string) string {
 			nameArr[i] = strings.ToUpper(string(part[0])) + strings.ToLower(part[1:])
 		}
 	}
-
 	return strings.Join(nameArr, "")
 }
+
 func asLowCaseCamStyle(name string) string {
 	if len(name) <= 0 {
 		return name
@@ -164,7 +164,6 @@ func asLowCaseCamStyle(name string) string {
 	nameArr := strings.Split(name, "_")
 	for i, part := range nameArr {
 		if len(part) > 0 {
-			// Capitalize the first letter of each part
 			nameArr[i] = strings.ToLower(string(part[0])) + (part[1:])
 		}
 	}
@@ -214,6 +213,7 @@ func main() {
 	}
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", *dbUser, *dbPassword, *dbHost, *dbPort, *dbName)
+	log.Println(dsn)
 	var err error
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {

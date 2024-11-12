@@ -1,0 +1,7 @@
+type UserError {
+    """The input parameter path that caused the error."""
+    field:[String!]
+
+    """Detailed information describing the error."""
+    message: String!
+}
