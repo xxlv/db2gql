@@ -87,6 +87,7 @@ func getTableSchema(db *sql.DB, dbname string, tableName string) ([]Column, erro
 		if err := rows.Scan(&column.Name, &column.Type, &column.Null, &column.Key, &column.Default, &column.Extra, &column.Comment); err != nil {
 			return nil, err
 		}
+		column.Table = tableName
 		columns = append(columns, column)
 	}
 
@@ -99,6 +100,7 @@ func getTableSchema(db *sql.DB, dbname string, tableName string) ([]Column, erro
 }
 
 type Column struct {
+	Table   string
 	Name    string
 	Type    string
 	Null    string
@@ -157,6 +159,10 @@ func asCamStyle(name string) string {
 	return strings.Join(nameArr, "")
 }
 
+func AsName(name string) string {
+	result := strings.Split(asCamStyle(name), "")
+	return strings.ToLower(result[0]) + strings.Join(result[1:], "")
+}
 func asLowCaseCamStyle(name string) string {
 	if len(name) <= 0 {
 		return name

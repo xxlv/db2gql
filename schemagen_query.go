@@ -16,7 +16,6 @@ func (qg *QueryGenerator) genQueryByID() string {
 		Comment: fmt.Sprintf("Query %s", qg.Name),
 		Type:    asCamStyle(qg.Name),
 	}
-
 	return result.Format()
 }
 

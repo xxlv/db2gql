@@ -18,15 +18,49 @@ func (sg *SchemaGenerator) genObject() string {
 	return tf.Format()
 }
 
+var needNotRepeatedField []string = []string{
+	"updated_at",
+	"created_at",
+}
+
 func asNameTypeFormatter(cols []Column) []*NameTypeFormatter {
 	result := []*NameTypeFormatter{}
 	if len(cols) <= 0 {
 		return result
 	}
+	addTypes := map[string]any{}
 	for _, v := range cols {
+		name := v.Name
+		// if this col's name already loaded , use $table.name instead
+		if _, ok := addTypes[name]; ok {
+			needSkip := false
+			// if in this map ,just skip
+			for _, v := range needNotRepeatedField {
+				if v == name {
+					needSkip = true
+					break
+				}
+			}
+			if needSkip {
+				continue
+			}
+
+			name = asCamStyle(v.Table) + asCamStyle(v.Name)
+
+		}
+		typ := mapMySQLTypeToGraphQL(v.Type, v.Null)
+		addTypes[name] = nil
+
+		// hack
+		if name == "id" {
+			typ = "ID"
+			if v.Null == "YES" {
+				typ = typ + "!"
+			}
+		}
 		result = append(result, &NameTypeFormatter{
-			Name:    v.Name,
-			Type:    mapMySQLTypeToGraphQL(v.Type, v.Null),
+			Name:    name,
+			Type:    typ,
 			Comment: v.Comment,
 			Args:    []*ArgsFormatter{},
 		})
