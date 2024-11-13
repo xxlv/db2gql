@@ -44,9 +44,7 @@ func asNameTypeFormatter(cols []Column) []*NameTypeFormatter {
 			if needSkip {
 				continue
 			}
-
 			name = asCamStyle(v.Table) + asCamStyle(v.Name)
-
 		}
 		typ := mapMySQLTypeToGraphQL(v.Type, v.Null)
 		addTypes[name] = nil
@@ -81,8 +79,8 @@ func (sg *SchemaGenerator) genPayload() string {
 				Comment: "FIXME: please add comment.",
 			},
 			{
-				Name:    asLowCaseCamStyle(sg.Name + "userErrors"),
-				Type:    fmt.Sprintf("[%s!]!", asCamStyle(sg.Name+"userErrors")),
+				Name:    asLowCaseCamStyle(sg.Name) + "UserErrors",
+				Type:    fmt.Sprintf("[%s!]!", asCamStyle(sg.Name)+"UserErrors"),
 				Comment: "The list of errors that occurred from executing the mutation.",
 			},
 		},
@@ -93,7 +91,7 @@ func (sg *SchemaGenerator) genPayload() string {
 func (sg *SchemaGenerator) genInput() string {
 	tf := TypeFormatter{
 		Kind:      "input",
-		Name:      sg.Name,
+		Name:      getTypeInputObject(sg.Name),
 		NameTypes: asNameTypeFormatter(sg.RawColumns),
 	}
 	return tf.Format()

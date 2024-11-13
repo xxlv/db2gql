@@ -136,47 +136,6 @@ func generateGraphQLSchemaWithCommentsWithFields(dbname string, crossTablefields
 	return schemaGenerator.Gen()
 }
 
-// asTypeNameFromKeys [Aa,Bb,Cc] => AaBbCc.
-func asTypeNameFromKeys(types map[string]any) string {
-	keys := make([]string, 0, len(types))
-	for k := range types {
-		keys = append(keys, asCamStyle(k))
-	}
-	return strings.Join(keys, "")
-}
-
-func asCamStyle(name string) string {
-	if len(name) <= 0 {
-		return name
-	}
-	nameArr := strings.Split(name, "_")
-	for i, part := range nameArr {
-		if len(part) > 0 {
-			// Capitalize the first letter of each part
-			nameArr[i] = strings.ToUpper(string(part[0])) + strings.ToLower(part[1:])
-		}
-	}
-	return strings.Join(nameArr, "")
-}
-
-func AsName(name string) string {
-	result := strings.Split(asCamStyle(name), "")
-	return strings.ToLower(result[0]) + strings.Join(result[1:], "")
-}
-func asLowCaseCamStyle(name string) string {
-	if len(name) <= 0 {
-		return name
-	}
-	nameArr := strings.Split(name, "_")
-	for i, part := range nameArr {
-		if len(part) > 0 {
-			nameArr[i] = strings.ToLower(string(part[0])) + (part[1:])
-		}
-	}
-
-	return strings.Join(nameArr, "")
-}
-
 func genComment(col Column) string {
 	return fmt.Sprintf("Field: %s", col.Name)
 }

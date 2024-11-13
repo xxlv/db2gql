@@ -173,6 +173,7 @@
     <div class="container">
       <div class="card">
         <label>Select Tables:</label>
+        <input type="text" id="tableSearch" placeholder="Search tables..." />
         <select id="tableSelect" onchange="addTable()" multiple></select>
 
         <div id="selectedTablesContainer"></div>
@@ -213,13 +214,28 @@
           debounceTimer = setTimeout(later, wait);
         };
       }
-
       const debouncedGenerateSchema = debounce(generateSchema, 300);
-
       async function fetchTables() {
         const response = await fetch("/tables");
         const tables = await response.json();
         const tableSelect = document.getElementById("tableSelect");
+        const searchInput = document.getElementById("tableSearch");
+
+        searchInput.addEventListener("input", () => {
+          const searchTerm = searchInput.value.toLowerCase();
+          const filteredOptions = tables.filter((table) =>
+            table.toLowerCase().includes(searchTerm)
+          );
+
+          tableSelect.innerHTML = "";
+          filteredOptions.forEach((table) => {
+            const option = document.createElement("option");
+            option.value = table;
+            option.text = table;
+            tableSelect.add(option);
+          });
+        });
+
         tables.forEach((table) => {
           const option = document.createElement("option");
           option.value = table;
