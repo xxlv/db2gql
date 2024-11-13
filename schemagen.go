@@ -93,6 +93,42 @@ func (sg *SchemaGenerator) genPayload() string {
 	return tf.Format()
 }
 
+func (sg *SchemaGenerator) genUserErrors() string {
+	tf := TypeFormatter{
+		Kind: "type",
+		Name: getTypeObject(sg.Name) + "UserErrors",
+		NameTypes: []*NameTypeFormatter{
+			{
+				Name:    "code",
+				Type:    getTypeObject(sg.Name) + "ErrorCode",
+				Comment: "The error code.",
+			},
+			{
+				Name:    "field",
+				Type:    "[String]!",
+				Comment: "The path to the input field that caused the error.",
+			},
+			{
+				Name:    "message",
+				Type:    "String!",
+				Comment: "The error message.",
+			},
+		},
+	}
+	return tf.Format()
+}
+
+func (sg *SchemaGenerator) genUserErrorCodeEnum() string {
+
+	tf := EnumFormatter{
+		Name: getTypeObject(sg.Name) + "ErrorCode",
+		ValueWithComment: map[string]string{
+			"CODE": " ** 😄This is example code, PLEASE REPLEACE YOUR.**",
+		},
+	}
+	return tf.Format()
+}
+
 func (sg *SchemaGenerator) genInput() string {
 	tf := TypeFormatter{
 		Kind: "input",
@@ -119,9 +155,14 @@ func (sg *SchemaGenerator) Gen() string {
 		sg.genMutations() + "\n" +
 		sg.genObject() + "\n" +
 		sg.genPayload() + "\n" +
-		sg.genInput()
+		sg.genInput() + "\n" +
+		sg.genUserErrors() + "\n" +
+		sg.genUserErrorCodeEnum()
 }
 
+func getTypeObject(name string) string {
+	return asCamStyle(name)
+}
 func getTypeInputObject(name string) string {
 	return asCamStyle(name) + "Input"
 }

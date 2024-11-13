@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // keep all formatters
 
@@ -17,6 +19,21 @@ func (f *ArgsFormatter) Format() string {
 		result += "!"
 	}
 	return result
+}
+
+type EnumFormatter struct {
+	Name             string
+	ValueWithComment map[string]string
+}
+
+func (f *EnumFormatter) Format() string {
+	body := ""
+	for enumValue, comment := range f.ValueWithComment {
+		cf := CommentFormatter{Content: comment}
+		body += "    " + cf.Format() + "\n"
+		body += "    " + enumValue + "\n"
+	}
+	return fmt.Sprintf("%s %s {\n%s\n}", "enum", f.Name, body)
 }
 
 // Type formatter as `type Object {}`
