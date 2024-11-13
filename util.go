@@ -2,6 +2,11 @@ package main
 
 import "strings"
 
+func AsName(name string) string {
+	result := strings.Split(asCamStyle(name), "")
+	return strings.ToLower(result[0]) + asLowCaseCamStyle(strings.Join(result[1:], ""))
+}
+
 // asTypeNameFromKeys [Aa,Bb,Cc] => AaBbCc.
 func asTypeNameFromKeys(types map[string]any) string {
 	keys := make([]string, 0, len(types))
@@ -32,10 +37,7 @@ func asCamStyle(name string) string {
 
 	return result
 }
-func AsName(name string) string {
-	result := strings.Split(asCamStyle(name), "")
-	return strings.ToLower(result[0]) + strings.Join(result[1:], "")
-}
+
 func asLowCaseCamStyle(name string) string {
 	if len(name) <= 0 {
 		return name
@@ -47,5 +49,18 @@ func asLowCaseCamStyle(name string) string {
 		}
 	}
 
+	return strings.Join(nameArr, "")
+}
+
+func asCamStyleWithoutUnderline(name string) string {
+	if len(name) <= 0 {
+		return name
+	}
+	nameArr := strings.Split(name, "_")
+	for i, part := range nameArr {
+		if len(part) > 0 {
+			nameArr[i] = (string(part[0])) + (part[1:])
+		}
+	}
 	return strings.Join(nameArr, "")
 }

@@ -11,9 +11,11 @@ type SchemaGenerator struct {
 
 func (sg *SchemaGenerator) genObject() string {
 	tf := TypeFormatter{
-		Kind:      "type",
-		Name:      sg.Name,
-		NameTypes: asNameTypeFormatter(sg.RawColumns),
+		Kind: "type",
+		Name: sg.Name,
+		NameTypes: asNameTypeFormatter(sg.RawColumns, func(c Column) bool {
+			return true
+		}),
 	}
 	return tf.Format()
 }
@@ -23,13 +25,16 @@ var needNotRepeatedField []string = []string{
 	"created_at",
 }
 
-func asNameTypeFormatter(cols []Column) []*NameTypeFormatter {
+func asNameTypeFormatter(cols []Column, skipFilter func(Column) bool) []*NameTypeFormatter {
 	result := []*NameTypeFormatter{}
 	if len(cols) <= 0 {
 		return result
 	}
 	addTypes := map[string]any{}
 	for _, v := range cols {
+		if !skipFilter(v) {
+			continue
+		}
 		name := v.Name
 		// if this col's name already loaded , use $table.name instead
 		if _, ok := addTypes[name]; ok {
@@ -79,7 +84,7 @@ func (sg *SchemaGenerator) genPayload() string {
 				Comment: "FIXME: please add comment.",
 			},
 			{
-				Name:    asLowCaseCamStyle(sg.Name) + "UserErrors",
+				Name:    asCamStyleWithoutUnderline(sg.Name) + "_UserErrors",
 				Type:    fmt.Sprintf("[%s!]!", asCamStyle(sg.Name)+"UserErrors"),
 				Comment: "The list of errors that occurred from executing the mutation.",
 			},
@@ -90,9 +95,11 @@ func (sg *SchemaGenerator) genPayload() string {
 
 func (sg *SchemaGenerator) genInput() string {
 	tf := TypeFormatter{
-		Kind:      "input",
-		Name:      getTypeInputObject(sg.Name),
-		NameTypes: asNameTypeFormatter(sg.RawColumns),
+		Kind: "input",
+		Name: getTypeInputObject(sg.Name),
+		NameTypes: asNameTypeFormatter(sg.RawColumns, func(c Column) bool {
+			return c.Name != "id"
+		}),
 	}
 	return tf.Format()
 }
