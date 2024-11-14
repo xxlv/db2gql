@@ -3,8 +3,11 @@ package main
 import "strings"
 
 func AsName(name string) string {
+	if name == "" {
+		return ""
+	}
 	result := strings.Split(asCamStyle(name), "")
-	return strings.ToLower(result[0]) + asLowCaseCamStyle(strings.Join(result[1:], ""))
+	return strings.ToLower(result[0]) + (strings.Join(result[1:], ""))
 }
 
 // asTypeNameFromKeys [Aa,Bb,Cc] => AaBbCc.
