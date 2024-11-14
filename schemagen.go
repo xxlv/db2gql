@@ -118,6 +118,76 @@ func (sg *SchemaGenerator) genUserErrors() string {
 	return tf.Format()
 }
 
+func (sg *SchemaGenerator) genConnection() string {
+	typeName := getTypeObject(sg.Name)
+	tf := TypeFormatter{
+		Kind: "type",
+		Name: typeName + "Connection",
+		NameTypes: []*NameTypeFormatter{
+			{
+				Name:    "edges",
+				Type:    fmt.Sprintf("[%sEdge!]!", typeName),
+				Comment: "A list of edges.",
+			},
+			{
+				Name:    "pageInfo",
+				Type:    "PageInfo!",
+				Comment: "An object that's used to retrieve cursor information about the current page.",
+			},
+		},
+	}
+	return tf.Format()
+}
+
+func (sg *SchemaGenerator) genEdge() string {
+	typeName := getTypeObject(sg.Name)
+
+	tf := TypeFormatter{
+		Kind: "type",
+		Name: fmt.Sprintf("%sEdge", typeName),
+		NameTypes: []*NameTypeFormatter{
+			{
+				Name:    "cursor",
+				Type:    "String",
+				Comment: "The position of each node in an array, used in pagination.",
+			},
+			{
+				Name:    "node",
+				Type:    typeName + "!",
+				Comment: "Whether there are more pages to fetch following the current page.",
+			},
+		},
+	}
+	return tf.Format()
+}
+func (sg *SchemaGenerator) genPageInfo() string {
+	tf := TypeFormatter{
+		Kind: "type",
+		Name: "PageInfo",
+		NameTypes: []*NameTypeFormatter{
+			{
+				Name:    "endCursor",
+				Type:    "String",
+				Comment: "The cursor corresponding to the last node in edges.",
+			},
+			{
+				Name:    "hasNextPage",
+				Type:    "Boolean!",
+				Comment: "Whether there are more pages to fetch following the current page.",
+			}, {
+				Name:    "hasPreviousPage",
+				Type:    "Boolean!",
+				Comment: "Whether there are any pages prior to the current page.",
+			}, {
+				Name:    "startCursor",
+				Type:    "String",
+				Comment: "The cursor corresponding to the first node in edges.",
+			},
+		},
+	}
+	return tf.Format()
+}
+
 func (sg *SchemaGenerator) genUserErrorCodeEnum() string {
 
 	tf := EnumFormatter{
@@ -157,7 +227,10 @@ func (sg *SchemaGenerator) Gen() string {
 		sg.genPayload() + "\n" +
 		sg.genInput() + "\n" +
 		sg.genUserErrors() + "\n" +
-		sg.genUserErrorCodeEnum()
+		sg.genUserErrorCodeEnum() + "\n" +
+		sg.genConnection() + "\n" +
+		sg.genPageInfo() + "\n" +
+		sg.genEdge()
 }
 
 func getTypeObject(name string) string {

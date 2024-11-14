@@ -74,7 +74,7 @@ func (cf *NameTypeFormatter) Format() string {
 		}
 		args += ")"
 	}
-	result := fmt.Sprintf("\n    %s\n    %s%s:%s", comment.Format(), cf.Name, args, cf.Type)
+	result := fmt.Sprintf("\n    %s\n    %s%s: %s", comment.Format(), cf.Name, args, cf.Type)
 	return result
 }
 
