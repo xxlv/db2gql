@@ -84,7 +84,27 @@ func (sg *SchemaGenerator) genPayload() string {
 				Comment: "FIXME: please add comment.",
 			},
 			{
-				Name:    asCamStyleWithoutUnderline(sg.Name) + "_UserErrors",
+				Name:    asCamStyleWithoutUnderline(sg.Name) + "UserErrors",
+				Type:    fmt.Sprintf("[%s!]!", asCamStyle(sg.Name)+"UserErrors"),
+				Comment: "The list of errors that occurred from executing the mutation.",
+			},
+		},
+	}
+	return tf.Format()
+}
+
+func (sg *SchemaGenerator) genDeletePayload() string {
+	tf := &TypeFormatter{
+		Kind: "type",
+		Name: getDeleteTypePayloadObject(sg.Name),
+		NameTypes: []*NameTypeFormatter{
+			{
+				Name:    "deleteId",
+				Type:    "ID",
+				Comment: "The globally-unique ID for the deleted cart transform.",
+			},
+			{
+				Name:    asCamStyleWithoutUnderline(sg.Name) + "DeleteUserErrors",
 				Type:    fmt.Sprintf("[%s!]!", asCamStyle(sg.Name)+"UserErrors"),
 				Comment: "The list of errors that occurred from executing the mutation.",
 			},
@@ -97,6 +117,31 @@ func (sg *SchemaGenerator) genUserErrors() string {
 	tf := TypeFormatter{
 		Kind: "type",
 		Name: getTypeObject(sg.Name) + "UserErrors",
+		NameTypes: []*NameTypeFormatter{
+			{
+				Name:    "code",
+				Type:    getTypeObject(sg.Name) + "ErrorCode",
+				Comment: "The error code.",
+			},
+			{
+				Name:    "field",
+				Type:    "[String]!",
+				Comment: "The path to the input field that caused the error.",
+			},
+			{
+				Name:    "message",
+				Type:    "String!",
+				Comment: "The error message.",
+			},
+		},
+	}
+	return tf.Format()
+}
+
+func (sg *SchemaGenerator) genDeleteUserErrors() string {
+	tf := TypeFormatter{
+		Kind: "type",
+		Name: getTypeObject(sg.Name) + "DeleteUserErrors",
 		NameTypes: []*NameTypeFormatter{
 			{
 				Name:    "code",
@@ -225,8 +270,10 @@ func (sg *SchemaGenerator) Gen() string {
 		sg.genMutations() + "\n" +
 		sg.genObject() + "\n" +
 		sg.genPayload() + "\n" +
+		sg.genDeletePayload() + "\n" +
 		sg.genInput() + "\n" +
 		sg.genUserErrors() + "\n" +
+		sg.genDeleteUserErrors() + "\n" +
 		sg.genUserErrorCodeEnum() + "\n" +
 		sg.genConnection() + "\n" +
 		sg.genPageInfo() + "\n" +
@@ -243,6 +290,13 @@ func getTypeInputObject(name string) string {
 func getTypePayloadObject(name string) string {
 	return asCamStyle(name) + "Payload"
 }
+func getDeleteTypePayloadObject(name string) string {
+	return asCamStyle(name) + "DeletePayload"
+}
 func getAPINameForUpdate(name string) string {
 	return asLowCaseCamStyle(name) + "Update"
+}
+
+func getAPINameForDelete(name string) string {
+	return asLowCaseCamStyle(name) + "Delete"
 }

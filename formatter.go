@@ -60,7 +60,7 @@ type NameTypeFormatter struct {
 }
 
 func (cf *NameTypeFormatter) Format() string {
-	cf.Name = AsName(cf.Name)
+	// cf.Name = cf.Name
 	comment := &CommentFormatter{Content: cf.Comment}
 	args := ""
 	if len(cf.Args) > 0 {
