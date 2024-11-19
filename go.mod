@@ -1,6 +1,6 @@
 module github.com/xxlv/db2gql
 
-go 1.23
+go 1.22
 
 require github.com/go-sql-driver/mysql v1.8.1
 
