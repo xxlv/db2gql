@@ -169,7 +169,7 @@ var dbHost = flag.String("dbhost", "127.0.0.1", "Database host")
 var dbPort = flag.String("dbport", "3306", "Database port")
 
 var serverPort = flag.String("port", "8080", "Server port")
-var runSandbox = flag.Bool("sandbox", true, "Run sandbox")
+var runSandbox = flag.Bool("sandbox", false, "Run sandbox")
 
 var DbName string // for global use ...
 
