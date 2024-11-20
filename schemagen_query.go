@@ -5,6 +5,18 @@ import (
 	"strings"
 )
 
+type ScalarGenerator struct {
+	Scalars []string
+}
+
+func (sg *ScalarGenerator) Gen() string {
+	scalars := ""
+	for _, v := range sg.Scalars {
+		scalars += fmt.Sprintf("scalar %s\n", v)
+	}
+	return scalars
+}
+
 type QueryGenerator struct {
 	Name       string
 	RawColumns []Column
@@ -14,7 +26,7 @@ func (qg *QueryGenerator) genQueryByID() string {
 	result := &NameTypeFormatter{
 		Name:    asLowCaseCamStyle(qg.Name),
 		Comment: fmt.Sprintf("Query %s", qg.Name),
-		Type:    asCamStyle(qg.Name),
+		Type:    qg.Name,
 		Args: []*ArgsFormatter{
 			{
 				Name:     "id",
@@ -64,6 +76,6 @@ func (qg *QueryGenerator) genQueryPageRelayStyle() string {
 }
 
 func (qg *QueryGenerator) Gen() string {
-	return fmt.Sprintf("extend type Query {%s\n}", qg.genQueryByID()+
+	return fmt.Sprintf("type Query {%s\n}", qg.genQueryByID()+
 		qg.genQueryPageRelayStyle())
 }

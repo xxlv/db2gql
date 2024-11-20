@@ -81,10 +81,10 @@ func (sg *SchemaGenerator) genPayload() string {
 			{
 				Name:    asLowCaseCamStyle(sg.Name),
 				Type:    asCamStyle(sg.Name),
-				Comment: "FIXME: please add comment.",
+				Comment: "the result.",
 			},
 			{
-				Name:    asCamStyleWithoutUnderline(sg.Name) + "UserErrors",
+				Name:    asLowCaseCamStyle(sg.Name + "UserErrors"),
 				Type:    fmt.Sprintf("[%s!]!", asCamStyle(sg.Name)+"UserErrors"),
 				Comment: "The list of errors that occurred from executing the mutation.",
 			},
@@ -255,6 +255,16 @@ func (sg *SchemaGenerator) genInput() string {
 	return tf.Format()
 }
 
+func (sg *SchemaGenerator) genScalars() string {
+
+	g := &ScalarGenerator{
+		Scalars: []string{
+			"DateTime",
+		},
+	}
+	return g.Gen()
+}
+
 func (sg *SchemaGenerator) genQueries() string {
 	qg := &QueryGenerator{Name: sg.Name, RawColumns: sg.RawColumns}
 	return qg.Gen()
@@ -266,7 +276,8 @@ func (sg *SchemaGenerator) genMutations() string {
 }
 
 func (sg *SchemaGenerator) Gen() string {
-	return sg.genQueries() + "\n" +
+	return sg.genScalars() + "\n" +
+		sg.genQueries() + "\n" +
 		sg.genMutations() + "\n" +
 		sg.genObject() + "\n" +
 		sg.genPayload() + "\n" +

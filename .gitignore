@@ -1,2 +1,5 @@
 tmp
 run.bat
+gqlserver/node_modules
+gqlserver/tmp
+node_modules

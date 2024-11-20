@@ -1,6 +1,9 @@
 package main
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 func AsName(name string) string {
 	if name == "" {
@@ -16,6 +19,8 @@ func asTypeNameFromKeys(types map[string]any) string {
 	for k := range types {
 		keys = append(keys, asCamStyle(k))
 	}
+	sort.Strings(keys)
+
 	return strings.Join(keys, "")
 }
 
@@ -33,7 +38,7 @@ func asCamStyle(name string) string {
 				result += part
 			} else {
 				// Capitalize the first letter of each part
-				result += strings.ToUpper(string(part[0])) + strings.ToLower(part[1:])
+				result += strings.ToUpper(string(part[0])) + part[1:]
 			}
 		}
 	}

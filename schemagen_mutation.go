@@ -50,5 +50,5 @@ func (mg *MutationGenerator) genUpdate() string {
 
 func (mg *MutationGenerator) Gen() string {
 
-	return fmt.Sprintf("extend type Mutation {%s\n}", mg.genUpdate()+mg.genDelete())
+	return fmt.Sprintf("type Mutation {%s\n}", mg.genUpdate()+mg.genDelete())
 }
