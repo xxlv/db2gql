@@ -135,6 +135,9 @@
         font-size: 0.875rem;
         line-height: 1.5;
         overflow-x: auto;
+        /* 调整宽度 */
+        width: calc(100% + 20px); /* 调整为比父容器稍宽 */
+        margin-left: -10px; /* 可选：左右对齐 */
       }
 
       .copy-button {
@@ -160,6 +163,26 @@
       .copy-button i {
         font-size: 0.875rem;
       }
+      #tableSelect {
+        width: 100%;
+        height: auto;
+        padding: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff;
+      }
+      #tableSearch {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      #tableSelect[multiple] {
+        min-height: 800px; /* Adjust as needed */
+      }
     </style>
     <link
       rel="stylesheet"
@@ -172,12 +195,13 @@
     </div>
     <div class="container">
       <div class="card">
-        <label>Select Tables:</label>
-        <input type="text" id="tableSearch" placeholder="Search tables..." />
+        <label>Select Models:</label>
+        <input type="text" id="tableSearch" placeholder="Search models..." />
         <select id="tableSelect" onchange="addTable()" multiple></select>
+      </div>
 
+      <div class="card">
         <div id="selectedTablesContainer"></div>
-
         <button
           class="btn btn-secondary"
           type="button"
