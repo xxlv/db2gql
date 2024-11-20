@@ -10,7 +10,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var gCurrSchema string
+var gCurrSchema string = `""" no schema"""`
 
 func renderHTML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")

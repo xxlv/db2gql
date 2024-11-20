@@ -7,7 +7,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 //go:embed index.html
@@ -165,6 +169,8 @@ var dbHost = flag.String("dbhost", "127.0.0.1", "Database host")
 var dbPort = flag.String("dbport", "3306", "Database port")
 
 var serverPort = flag.String("port", "8080", "Server port")
+var runSandbox = flag.Bool("sandbox", true, "Run sandbox")
+
 var DbName string // for global use ...
 
 func main() {
@@ -185,11 +191,64 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	if runSandbox != nil && *runSandbox {
+		// cd ./gqlserver && node server.js
+		go runSandboxLocal()
+
+	}
+
 	http.HandleFunc("/", renderHTML)
 	http.HandleFunc("/tables", handleTables)
 	http.HandleFunc("/fields", handleFields)
 	http.HandleFunc("/generateSchema", handleGenerateSchema)
 	http.HandleFunc("/previewSchema", previewCurrentSchema)
 	fmt.Println("Server is running on http://localhost:" + *serverPort)
+
 	log.Fatal(http.ListenAndServe(":"+*serverPort, nil))
+}
+
+func runSandboxLocal() {
+	log.Println("run sandbox ...")
+	// Command to navigate to gqlserver and run node server.js
+	cmd := exec.Command("bash", "-c", "cd ./gqlserver && node server.js")
+
+	// Set the command's stdout and stderr to the main process's outputs
+	cmd.Stdout = log.Writer()
+	cmd.Stderr = log.Writer()
+
+	// Start the Node.js server
+	err := cmd.Start()
+	if err != nil {
+		log.Fatalf("failed to start node server: %v", err)
+	}
+
+	// Capture the process ID (PID) of the Node.js server
+	nodePID := cmd.Process.Pid
+	log.Printf("Node server started with PID %d", nodePID)
+
+	// Handle graceful exit and kill the node server on program quit
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-signalChan
+		log.Println("Received exit signal, terminating Node.js server...")
+		err := cmd.Process.Kill()
+		if err != nil {
+			log.Printf("Failed to kill Node.js server: %v", err)
+		} else {
+			log.Println("Node.js server terminated successfully.")
+		}
+		os.Exit(0)
+	}()
+
+	// Wait for the Node.js server to finish (this blocks the main goroutine)
+	err = cmd.Wait()
+	if err != nil {
+		log.Printf("Node.js server stopped with error: %v", err)
+	} else {
+		log.Println("Node.js server stopped gracefully.")
+	}
+
 }
