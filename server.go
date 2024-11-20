@@ -2,19 +2,39 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"html/template"
+	"net"
 	"net/http"
+	"time"
 
 	_ "embed"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var sandBoxPort = "4000"
+
 var gCurrSchema string = `""" no schema"""`
 
+func isPortAvailable(port string) bool {
+	timeout := time.Second
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort("localhost", port), timeout)
+	if err != nil {
+		return false
+	}
+	conn.Close()
+	return true
+}
 func renderHTML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, htmlContent)
+	portAvailable := isPortAvailable(sandBoxPort)
+	tmpl, _ := template.New("html").Parse(htmlContent)
+	data := struct {
+		SandboxAvailable bool
+	}{
+		SandboxAvailable: portAvailable,
+	}
+	_ = tmpl.Execute(w, data)
 }
 
 func handleFields(w http.ResponseWriter, r *http.Request) {

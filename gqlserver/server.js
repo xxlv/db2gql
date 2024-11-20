@@ -1,48 +1,77 @@
 const { ApolloServer, gql } = require("apollo-server");
 const axios = require("axios");
 
-// Retry configuration
-const MAX_RETRIES = 10; // Maximum number of retries
-const RETRY_DELAY_MS = 5000; // 5 seconds delay between retries
+const CHECK_INTERVAL_MS = 10000; // 10s
+let schemaHash = "";
+let server;
 
-async function loadSchema() {
-  let retries = 0;
-
-  while (retries < MAX_RETRIES) {
-    try {
-      const response = await axios.get("http://localhost:8080/previewSchema");
-
-      // Check if the response contains valid data
-      if (response.data) {
-        return gql(response.data);
-      }
-
-      console.log("No data received, retrying...");
-    } catch (err) {
-      console.error("Error fetching schema:", err.message);
-    }
-
-    retries++;
-    console.log(`Retrying... attempt ${retries}/${MAX_RETRIES}`);
-    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS)); // Wait before retrying
+async function fetchSchema() {
+  try {
+    const response = await axios.get("http://localhost:8080/previewSchema");
+    return response.data || null;
+  } catch (err) {
+    console.error("Error fetching schema:", err.message);
+    return null;
   }
-
-  throw new Error("Failed to load schema after multiple retries");
 }
 
-async function startServer() {
+async function loadSchema() {
+  const schemaData = await fetchSchema();
+
+  if (schemaData) {
+    return gql(schemaData);
+  }
+
+  throw new Error("Failed to load schema");
+}
+
+async function startApolloServer() {
   try {
     const typeDefs = await loadSchema();
     const resolvers = {};
 
-    const server = new ApolloServer({ typeDefs, resolvers });
+    server = new ApolloServer({ typeDefs, resolvers });
 
-    server.listen().then(({ url }) => {
-      console.log(`Server ready at ${url}`);
-    });
+    const { url } = await server.listen();
+    console.log(`Server ready at ${url}`);
   } catch (err) {
     console.error("Error starting server:", err);
   }
 }
 
-startServer();
+async function restartServer() {
+  if (server) {
+    await server.stop();
+    console.log("Server stopped. Restarting...");
+  }
+
+  await startApolloServer();
+}
+
+async function monitorSchemaChanges() {
+  setInterval(async () => {
+    try {
+      const schemaData = await fetchSchema();
+
+      if (schemaData) {
+        const newHash = require("crypto")
+          .createHash("md5")
+          .update(schemaData)
+          .digest("hex");
+
+        if (newHash !== schemaHash) {
+          console.log("Schema has changed. Restarting server...");
+          schemaHash = newHash;
+          await restartServer();
+        }
+      }
+    } catch (err) {
+      console.error("Error monitoring schema changes:", err.message);
+    }
+  }, CHECK_INTERVAL_MS);
+}
+
+(async () => {
+  await startApolloServer();
+  monitorSchemaChanges();
+})();
