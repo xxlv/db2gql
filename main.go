@@ -185,11 +185,11 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-
 	http.HandleFunc("/", renderHTML)
 	http.HandleFunc("/tables", handleTables)
 	http.HandleFunc("/fields", handleFields)
 	http.HandleFunc("/generateSchema", handleGenerateSchema)
+	http.HandleFunc("/previewSchema", previewCurrentSchema)
 	fmt.Println("Server is running on http://localhost:" + *serverPort)
 	log.Fatal(http.ListenAndServe(":"+*serverPort, nil))
 }

@@ -10,6 +10,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var gCurrSchema string
+
 func renderHTML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprint(w, htmlContent)
@@ -63,6 +65,12 @@ func handleGenerateSchema(w http.ResponseWriter, r *http.Request) {
 		flatSelectedFields = append(flatSelectedFields, fieldOfTable...)
 	}
 	schema := generateGraphQLSchemaWithCommentsWithFields(DbName, flatSelectedFields)
+	gCurrSchema = schema // global
 	w.Header().Set("Content-Type", "text/plain")
 	_, _ = w.Write([]byte(schema))
+}
+
+func previewCurrentSchema(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	_, _ = w.Write([]byte(gCurrSchema))
 }

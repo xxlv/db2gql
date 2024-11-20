@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "apollo-server": "^3.13.0",
-    "graphql": "^16.9.0"
+    "axios": "^1.7.7",
+    "graphql": "^16.9.0",
+    "graphql-playground-html": "^1.6.30"
   }
 }

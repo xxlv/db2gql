@@ -1,17 +1,22 @@
 const { ApolloServer, gql } = require("apollo-server");
-const fs = require("fs");
-const path = require("path");
+const axios = require("axios");
 
-// Load schema from file
-const typeDefs = fs.readFileSync(
-  path.join(__dirname, "schema.graphql"),
-  "utf8"
-);
+async function loadSchema() {
+  const response = await axios.get("http://localhost:8080/previewSchema");
+  return gql(response.data);
+}
 
-const resolvers = {};
+async function startServer() {
+  const typeDefs = await loadSchema();
+  const resolvers = {};
 
-const server = new ApolloServer({ typeDefs, resolvers });
+  const server = new ApolloServer({ typeDefs, resolvers });
 
-server.listen().then(({ url }) => {
-  console.log(`Server ready at ${url}`);
+  server.listen().then(({ url }) => {
+    console.log(`Server ready at ${url}`);
+  });
+}
+
+startServer().catch((err) => {
+  console.error("Error starting server:", err);
 });
