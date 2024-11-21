@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "@faker-js/faker": "^9.2.0",
     "apollo-server": "^3.13.0",
     "axios": "^1.7.7",
+    "faker": "^5.5.3",
     "graphql": "^16.9.0",
     "graphql-playground-html": "^1.6.30"
   }
