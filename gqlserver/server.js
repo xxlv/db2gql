@@ -4,7 +4,7 @@ const axios = require("axios");
 const { faker } = require("@faker-js/faker");
 const crypto = require("crypto");
 
-const CHECK_INTERVAL_MS = 10000; // 10s
+const CHECK_INTERVAL_MS = 10000 / 2; // 5s
 let schemaHash = "";
 let server;
 
@@ -106,6 +106,11 @@ async function startApolloServer() {
     const schemaString = await fetchSchema();
     if (!schemaString) {
       throw new Error("Failed to fetch schema");
+    }
+
+    if (schemaString.length <= 16) {
+      console.log("schema not prepared...");
+      return;
     }
 
     // Build the schema using graphql's buildSchema
