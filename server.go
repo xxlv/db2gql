@@ -1,20 +1,18 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"html/template"
 	"net"
 	"net/http"
 	"time"
 
-	_ "embed"
-
 	_ "github.com/go-sql-driver/mysql"
 )
 
 var sandBoxPort = "4000"
-
-var gCurrSchema string = `""" no schema"""`
+var gCurrSchema string = `""" no schema """`
 
 func isPortAvailable(port string) bool {
 	timeout := time.Second
@@ -25,19 +23,22 @@ func isPortAvailable(port string) bool {
 	conn.Close()
 	return true
 }
-func renderHTML(w http.ResponseWriter, r *http.Request) {
+
+func HandleDb2GqlIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	portAvailable := isPortAvailable(sandBoxPort)
 	tmpl, _ := template.New("html").Parse(htmlContent)
 	data := struct {
 		SandboxAvailable bool
+		SandBoxPort      string
 	}{
 		SandboxAvailable: portAvailable,
+		SandBoxPort:      sandBoxPort,
 	}
 	_ = tmpl.Execute(w, data)
 }
 
-func handleFields(w http.ResponseWriter, r *http.Request) {
+func HandleFields(w http.ResponseWriter, r *http.Request) {
 	tableName := r.URL.Query().Get("table")
 	columns, err := getTableSchema(db, DbName, tableName)
 	if err != nil {
@@ -49,7 +50,7 @@ func handleFields(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(columns)
 }
 
-func handleTables(w http.ResponseWriter, r *http.Request) {
+func HandleTables(w http.ResponseWriter, r *http.Request) {
 	query := `SHOW TABLES`
 	rows, err := db.Query(query)
 	if err != nil {
@@ -73,7 +74,7 @@ func handleTables(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleGenerateSchema(w http.ResponseWriter, r *http.Request) {
+func HandleGenerateSchema(w http.ResponseWriter, r *http.Request) {
 	var selectedFields map[string]map[string][]string
 	if err := json.NewDecoder(r.Body).Decode(&selectedFields); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -90,7 +91,7 @@ func handleGenerateSchema(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(schema))
 }
 
-func previewCurrentSchema(w http.ResponseWriter, r *http.Request) {
+func HandlePreviewCurrentSchema(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	_, _ = w.Write([]byte(gCurrSchema))
 }

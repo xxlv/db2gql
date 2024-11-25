@@ -11,12 +11,14 @@ import (
 	"os/exec"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 )
 
 //go:embed index.html
 var htmlContent string
 
+var schemaCacheLock sync.Mutex
 var schemaCache map[string]map[string][]Column = make(map[string]map[string][]Column)
 
 var typeMap = map[string]string{
@@ -54,6 +56,9 @@ type Descriptor struct {
 }
 
 func getTableSchema(db *sql.DB, dbname string, tableName string) ([]Column, error) {
+	schemaCacheLock.Lock()
+	defer schemaCacheLock.Unlock()
+
 	if cached, ok := schemaCache[dbname]; ok {
 		if v, ok := cached[tableName]; ok {
 			return v, nil
@@ -198,11 +203,11 @@ func main() {
 
 	}
 
-	http.HandleFunc("/", renderHTML)
-	http.HandleFunc("/tables", handleTables)
-	http.HandleFunc("/fields", handleFields)
-	http.HandleFunc("/generateSchema", handleGenerateSchema)
-	http.HandleFunc("/previewSchema", previewCurrentSchema)
+	http.HandleFunc("/", HandleDb2GqlIndex)
+	http.HandleFunc("/tables", HandleTables)
+	http.HandleFunc("/fields", HandleFields)
+	http.HandleFunc("/generateSchema", HandleGenerateSchema)
+	http.HandleFunc("/previewSchema", HandlePreviewCurrentSchema)
 	fmt.Println("Server is running on http://localhost:" + *serverPort)
 
 	log.Fatal(http.ListenAndServe(":"+*serverPort, nil))
